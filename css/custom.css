@@ -1,3 +1,9 @@
 .card-header{
   padding: none;
+
+}
+
+.img-responsive
+{
+	/*max-height: 250px;*/
 }

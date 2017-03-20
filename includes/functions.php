@@ -8,20 +8,41 @@ function connectDatabase($host,$database,$user,$pass){
 
 	} catch (PDOException $e){
 		print('Error! ' . $e->getMessage() . '<br>');
+		die();
 	}
 }
+
+function getProjects($dbh) {
+
+	$sth = $dbh->prepare("SELECT * FROM portfolio");
+	$sth->execute();
+	$result = $sth->fetchAll();
+    // die(var_dump($result));
+	return $result;
+ 
+
+} 
+
+
+
 // This function inserts all feedback into feedback database
-Function addFeedback($dbh, $name, $email, $feedback) {
- 
+function addProjectToDatabase($dbh, $title, $url, $content, $link) {
+
 //Prepare the statement that will be executed
-$sth = $dbh->prepare("INSERT INTO feedback (name, email, feedback, created_at) VALUES (:name, :email, :feedback, NOW())");
- 
+	$sth = $dbh->prepare("INSERT INTO portfolio VALUES (NULL, :title, :url, :content, :link)");
+
 //Bind the "$searchQuery" the SQL statement
-$sth->bindValue(':name', $name , PDO::PARAM_STR);
-$sth->bindValue(':email', $email , PDO::PARAM_STR);
-$sth->bindValue(':feedback', $feedback , PDO::PARAM_STR);
- 
+	$sth->bindValue(':title', $title, PDO::PARAM_STR);
+	$sth->bindValue(':url', $url , PDO::PARAM_STR);
+	$sth->bindValue(':content', $content , PDO::PARAM_STR);
+	$sth->bindValue(':link', $link , PDO::PARAM_STR);
+
 //Execute the statement
-$result = $sth->execute();    
-return $result;
+	$success = $sth->execute();    
+	return $success;
 }
+
+// This function inserts all feedback into feedback database
+
+
+

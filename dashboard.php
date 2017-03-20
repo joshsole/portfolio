@@ -1,9 +1,30 @@
 <?php
+require 'includes/config.php';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+//define variables and set to empty values
+    $title = $image = $content = $link = '';
+    //add data to form
+
+    $title = $_POST['title'];
+    $url = $_POST['url'];
+    $content = $_POST['content'];
+    $link = $_POST['link'];
+
+// Next, we must do some validation to see if we got valid data
+
+
+
+
+$didInsertWork = addProjectToDatabase($dbh, $title, $url, $content, $link);
+
+}
 
 require 'partials/header.php';
 require 'partials/navigation.php';
-require 'includes/config.php';
-require 'includes/functions.php';
+
+
 
 ?>
 <div id="app">
@@ -35,7 +56,7 @@ require 'includes/functions.php';
                                 <label for="projectName" class="col-md-4 control-label">Title</label>
 
                                 <div class="col-md-6">
-                                    <input id="projectName" type="text" class="form-control" name="projectName" value="" required="" autofocus="">
+                                    <input id="projectName" type="text" class="form-control" name="title" value="" required="" autofocus="">
                                 </div>
                             </div>
 
@@ -44,7 +65,7 @@ require 'includes/functions.php';
                                 <label for="projectImgUrl" class="col-md-4 control-label">Image Url</label>
 
                                 <div class="col-md-6">
-                                    <input id="projectImgUrl" type="text" class="form-control" name="projectImgUrl" value="" required="" autofocus=""  onchange="readURL(this)">
+                                    <input id="projectImgUrl" type="text" class="form-control" name="url" value="" required="" autofocus=""  onchange="readURL(this)">
                                 </div>
                             </div>
 
@@ -53,7 +74,7 @@ require 'includes/functions.php';
                                 <label for="projectContent" class="col-md-4 control-label">Content</label>
 
                                 <div class="col-md-6">
-                                    <input id="projectContent" type="text" class="form-control" name="projectContent" value="" required="" autofocus="">
+                                    <input id="projectContent" type="text" class="form-control" name="content" value="" required="" autofocus="">
                                 </div>
                             </div>
 
@@ -62,7 +83,7 @@ require 'includes/functions.php';
                                 <label for="projectLink" class="col-md-4 control-label">Link</label>
 
                                 <div class="col-md-6">
-                                    <input id="projectLink" type="text" class="form-control" name="projectLink" value="" required="" autofocus="">
+                                    <input id="projectLink" type="text" class="form-control" name="link" value="" required="" autofocus="">
                                 </div>
                             </div>
 

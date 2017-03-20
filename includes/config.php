@@ -10,4 +10,6 @@ $database = 'portfolio';
 
 
 $dbh = connectDatabase($host,$database,$user,$pass);
+
 //Next we wil connect to the database
+$projects = getProjects($dbh);
