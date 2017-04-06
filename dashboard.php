@@ -7,17 +7,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $title = $image = $content = $link = '';
     //add data to form
 
-    $title = $_POST['title'];
-    $url = $_POST['url'];
-    $content = $_POST['content'];
-    $link = $_POST['link'];
+    $title = e($_POST['title']);
+    $url = e($_POST['url']);
+    $content = e($_POST['content']);
+    $link = e($_POST['link']);
 
 // Next, we must do some validation to see if we got valid data
 
 
 
 
-$didInsertWork = addProjectToDatabase($dbh, $title, $url, $content, $link);
+$didInsertWork = addProject($dbh, $title, $url, $content, $link);
 
 }
 
