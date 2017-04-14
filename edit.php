@@ -95,7 +95,7 @@ require 'partials/navigation.php';
     <div class="col-md-4">
       <!-- Image Display Thumbnail -->
       <div class="form-group">
-        <img style="display: block;" width="100%" height="100%" id="projectThumbnail" src="https://d13yacurqjgara.cloudfront.net/users/608072/screenshots/3360041/landingpage3.png" class="img-responsive">
+        <img style="display: block;" width="100%" height="100%" id="projectThumbnail" src="<?= $editProject['url'] ?>" class="img-responsive">
       </div>
     </div>
   </div>

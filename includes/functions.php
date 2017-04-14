@@ -2,24 +2,127 @@
 
 function dd($data)
 {
-    die(var_dump($data));
+  die(var_dump($data));
 }
 
+
 function loggedIn() {
-    return !empty($_SESSION['username']);
+  return !empty($_SESSION['username']);
+}
+
+// -----------------------------------------------------------------------------
+// user specific function for editing and deleting.
+// -----------------------------------------------------------------------------
+
+function userOwns($id) {
+  if (loggedIn() && $_SESSION['id'] === $id){
+   return true;
+ }
+ return false;
 }
 
 
 
 function redirect($url)
 {
-    header ('Location: ' . $url);
-    die();
+  header ('Location: ' . $url);
+  die();
 }
+
+// -----------------------------------------------------------------------------
+// htmlspecialchars function.
+// -----------------------------------------------------------------------------
 
 function e($value)
 {
 	return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+}
+
+// -----------------------------------------------------------------------------
+// show the time function.
+// -----------------------------------------------------------------------------
+/**
+ * Returns a human-readable time from a timestamp
+ * @param timestamp $timestamp
+ * @return string
+ */
+function formatTime($timestamp)
+{
+  // Get time difference and setup arrays
+  $difference = time() - $timestamp;
+  $periods = array("second", "minute", "hour", "day", "week", "month", "years");
+  $lengths = array("60","60","24","7","4.35","12");
+
+  // Past or present
+  if ($difference === 0) {
+    return 'Just now';
+  }
+  if ($difference >= 0)
+  {
+    $ending = "ago";
+  }
+  else
+  {
+    $difference = -$difference;
+    $ending = "to go";
+  }
+
+  // Figure out difference by looping while less than array length
+  // and difference is larger than lengths.
+  $arr_len = count($lengths);
+  for($j = 0; $j < $arr_len && $difference >= $lengths[$j]; $j++)
+  {
+    $difference /= $lengths[$j];
+  }
+
+  // Round up
+  $difference = round($difference);
+
+  // Make plural if needed
+  if($difference != 1)
+  {
+    $periods[$j].= "s";
+  }
+
+  // Default format
+  $text = "$difference $periods[$j] $ending";
+
+  // over 24 hours
+  if($j > 2)
+  {
+    // future date over a day formate with year
+    if($ending == "to go")
+    {
+      if($j == 3 && $difference == 1)
+      {
+        $text = "Tomorrow at ". date("g:i a", $timestamp);
+      }
+      else
+      {
+        $text = date("F j, Y \a\\t g:i a", $timestamp);
+      }
+      return $text;
+    }
+
+    if($j == 3 && $difference == 1) // Yesterday
+    {
+      $text = "Yesterday at ". date("g:i a", $timestamp);
+    }
+    else if($j == 3) // Less than a week display -- Monday at 5:28pm
+    {
+      $text = date("l \a\\t g:i a", $timestamp);
+    }
+    else if($j < 6 && !($j == 5 && $difference == 12)) // Less than a year display -- June 25 at 5:23am
+    {
+      $text = date("F j \a\\t g:i a", $timestamp);
+    }
+    else // if over a year or the same month one year ago -- June 30, 2010 at 5:34pm
+    {
+      $text = date("F j, Y \a\\t g:i a", $timestamp);
+    }
+  }
+
+  return $text;
 }
 
 // -----------------------------------------------------------------------------
@@ -39,11 +142,16 @@ function connectDatabase($host,$database,$user,$pass){
 	}
 }
 
-// -----------------------------------------------------------------------------
-// Insert into "users" table
-// -----------------------------------------------------------------------------
 
 
+/**
+ * Insert into "users" table
+ * @param type $dbh 
+ * @param type $username 
+ * @param type $email 
+ * @param type $password 
+ * @return type
+ */
 function addUser($dbh, $username, $email, $password) {
 
 //Prepare the statement that will be executed
@@ -62,21 +170,6 @@ function addUser($dbh, $username, $email, $password) {
 	return true;
 }
 
-/* 
- To add a new message you will use this syntax addMessage [success|error] [message]
-
- To display errors on the page place following code in a div on what ever page.
-
- <= showMessages() ?>
-*/
-
-
-
-/**
- * A helpful message function to return all massages saved in the session
- * @param string|null $type
- * @return string
- */
 
 
 // -----------------------------------------------------------------------------
@@ -117,10 +210,10 @@ function addMessage($type, $message) {
 // -----------------------------------------------------------------------------
 
 
-function addProject($dbh, $title, $url, $content, $link) {
+function addProject($dbh, $title, $url, $content, $link, $userid) {
 
 //Prepare the statement that will be executed
-	$sth = $dbh->prepare("INSERT INTO projects VALUES (NULL, :title, :url, :content, :link)");
+	$sth = $dbh->prepare("INSERT INTO projects VALUES (NULL, :title, :url, :content, :link, :user_id, NOW(), NOW())");
 
 
 
@@ -129,6 +222,7 @@ function addProject($dbh, $title, $url, $content, $link) {
 	$sth->bindValue(':url', $url , PDO::PARAM_STR);
 	$sth->bindValue(':content', $content , PDO::PARAM_STR);
 	$sth->bindValue(':link', $link , PDO::PARAM_STR);
+	$sth->bindValue(':user_id', $userid , PDO::PARAM_INT);
 
 //Execute the statement
 	$success = $sth->execute();    
@@ -137,38 +231,39 @@ function addProject($dbh, $title, $url, $content, $link) {
 
 
 
-function getUser($dbh, $username) {
-    $sth = $dbh->prepare('SELECT * FROM `users` WHERE username = :username OR email = :email');
 
-    $sth->bindValue(':username', $username, PDO::PARAM_STR);
-    $sth->bindValue(':email', $username, PDO::PARAM_STR);
+
+function getUser($dbh, $username) {
+  $sth = $dbh->prepare('SELECT * FROM `users` WHERE username = :username OR email = :email');
+
+  $sth->bindValue(':username', $username, PDO::PARAM_STR);
+  $sth->bindValue(':email', $username, PDO::PARAM_STR);
 
     // Execute the statement.
-    $sth->execute();
+  $sth->execute();
 
-    $row = $sth->fetch();
+  $row = $sth->fetch();
 
-    if (!empty($row)) {
-      return $row;
-    }
-    return false;
+  if (!empty($row)) {
+    return $row;
+  }
+  return false;
 }
 
 function getProjects($dbh) {
-    $sth = $dbh->prepare('SELECT * FROM `projects` ');
-
-
+  $sth = $dbh->prepare('SELECT * FROM `projects` ');
 
     // Execute the statement.
-    $sth->execute();
+  $sth->execute();
 
-    $row = $sth->fetchAll();
+  $row = $sth->fetchAll();
 
-    if (!empty($row)) {
-      return $row;
-    }
-    return false;
+  if (!empty($row)) {
+    return $row;
+  }
+  return false;
 }
+
 // -----------------------------------------------------------------------------
 // Edit and delelte projects functions
 // -----------------------------------------------------------------------------
@@ -176,7 +271,7 @@ function getProjects($dbh) {
 
 function editProject($id, $dbh) {
 	// prepare statement that will be executed
-	$sth = $dbh->prepare("SELECT * FROM projects WHERE id = :id");
+	$sth = $dbh->prepare("SELECT * FROM projects WHERE id = :id LIMIT 1");
 	$sth->bindParam(':id', $id, PDO::PARAM_STR);
 	$sth->execute();
 
@@ -185,7 +280,7 @@ function editProject($id, $dbh) {
 }
 
 function updateProject($id, $dbh, $title, $url, $content, $link) {
-	$sth = $dbh->prepare("UPDATE projects SET title = :title, url = :url, content = :content, link = :link WHERE id = :id");
+	$sth = $dbh->prepare("UPDATE projects SET title = :title, url = :url, content = :content, link = :link WHERE id = :id LIMIT 1");
 	// bind the $id to the SQL statement
 	$sth->bindParam(':id', $id, PDO::PARAM_STR);
 	// bind the $name to the SQL statement
@@ -203,29 +298,95 @@ function updateProject($id, $dbh, $title, $url, $content, $link) {
 
 function deleteProject($id, $dbh) {
 	// prepare statement that will be executed
-	$result = $dbh->prepare("DELETE FROM projects WHERE id= :id");
+	$result = $dbh->prepare("DELETE FROM projects WHERE id= :id LIMIT 1");
 	$result->bindParam(':id', $id);
 	$result->execute();
 }
 
+// -----------------------------------------------------------------------------
+// View projects functions
+// -----------------------------------------------------------------------------
+
+function viewProject($id, $dbh) {
+	// prepare statement that will be executed
+	$sth = $dbh->prepare("SELECT * FROM projects WHERE id = :id LIMIT 1");
+	$sth->bindParam(':id', $id, PDO::PARAM_STR);
+	$sth->execute();
+
+	$result = $sth->fetch();
+	return $result;
+}
+
+
+// -----------------------------------------------------------------------------
+// Get Gravatar Imange Profile function
+// -----------------------------------------------------------------------------
+
+function get_gravatar( $email, $s = 80, $d = 'mm', $r = 'g', $img = false, $atts = array() ) {
+  $url = 'https://www.gravatar.com/avatar/';
+  $url .= md5( strtolower( trim( $email ) ) );
+  $url .= "?s=$s&d=$d&r=$r";
+  if ( $img ) {
+    $url = '<img src="' . $url . '"';
+    foreach ( $atts as $key => $val )
+      $url .= ' ' . $key . '="' . $val . '"';
+    $url .= ' />';
+  }
+  return $url;
+}
+
+// -----------------------------------------------------------------------------
+// Get Comments functions
+// -----------------------------------------------------------------------------
+function getComments($id, $dbh) {
+  $sth = $dbh->prepare("SELECT comments.id, comments.content, comments.project_id, comments.user_id, comments.updated_at, comments.created_at, users.username, users.email  FROM comments INNER JOIN users ON comments.user_id = users.id WHERE comments.project_id = :id ORDER BY comments.created_at DESC");
+
+    // Execute the statement.
+  $sth->bindParam(':id', $id, PDO::PARAM_STR);
+  $sth->execute();
+  $row = $sth->fetchAll();
+
+  if (!empty($row)) {
+    return $row;
+  }
+  return false;
+}
+
+// -----------------------------------------------------------------------------
+// Add Comments function
+// -----------------------------------------------------------------------------
 
 
 
+function addComment($dbh, $project_id, $content) {
+ $sth = $dbh->prepare("INSERT INTO comments (content, user_id, project_id, created_at, updated_at) VALUES (:content, :user_id, :project_id, NOW(), NOW())");
+ $sth->bindParam(':content', $content, PDO::PARAM_STR);
+ $sth->bindParam(':user_id', $_SESSION['id'], PDO::PARAM_INT);
+ $sth->bindParam(':project_id', $project_id, PDO::PARAM_INT);
+ $success = $sth->execute();
+ return $success;
+}
+
+// -----------------------------------------------------------------------------
+// Delete Comments function
+// -----------------------------------------------------------------------------
 
 
+// function deleteComment($dbh, $project_id, $content) {
+//   // prepare statement that will be executed
+//   $result = $dbh->prepare("DELETE FROM comments (content, user_id, project_id, created_at, updated_at) WHERE (:content, :user_id, :project_id, NOW(), NOW())");
+//   $sth->bindParam(':content', $content, PDO::PARAM_STR);
+//   $sth->bindParam(':user_id', $_SESSION['id'], PDO::PARAM_INT);
+//   $sth->bindParam(':project_id', $project_id, PDO::PARAM_INT);
+//   $result->execute();
+// }
 
-
-
-
-
-
-
-
-
-
-
-
-
+function deleteComment($dbh, $id) {
+  // prepare statement that will be executed
+  $result = $dbh->prepare("DELETE FROM comments WHERE id= :id LIMIT 1");
+  $result->bindParam(':id', $id);
+  $result->execute();
+}
 
 
 

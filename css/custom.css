@@ -3,9 +3,9 @@
 
 }
 
-.img-responsive
+.panel-heading img
 {
-	/*max-height: 250px;*/
+	max-height: 210px;
 }
 /*
 .btn-danger,
@@ -19,3 +19,10 @@
 	margin-right: 10px;
 }*/
 
+.nav-profile-photo {
+    border: 1px solid #d3e0e9;
+    border-radius: 50%;
+    height: 30px;
+    width: 30px;
+    padding: 1px;
+}

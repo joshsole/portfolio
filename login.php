@@ -25,8 +25,10 @@ $passwordMatches = password_verify($password, $user['password']);
 if (!empty($user) && ($username === strtolower($user['username']) || $username === strtolower($user['email'])) && $passwordMatches) {
     // Add data to the session
     $_SESSION['username'] = $user['username'];
-
-    addMessage("success", 'You have been logged in');
+    $_SESSION['email'] = $user['email'];
+    $_SESSION['id'] = $user['id'];
+   
+    addMessage("success", 'Congratulations, You have are now logged in');
     // Redirect to the dashboard
     redirect('index.php');
 }
@@ -36,6 +38,7 @@ else {
 }
 
 $page['title'] = 'Login';
+
 require 'partials/header.php';
 require 'partials/navigation.php';
 
@@ -61,7 +64,7 @@ require 'partials/navigation.php';
 
                         <!-- Email Input -->
                         <div class="form-group">
-                            <label for="username" class="col-md-4 control-label">User Name</label>
+                            <label for="username" class="col-md-4 control-label">User Name/Email Address</label>
 
                             <div class="col-md-6">
                                 <input id="username" type="username" class="form-control" name="username" value="" required="" autofocus="">

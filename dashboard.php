@@ -11,13 +11,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $url = e($_POST['url']);
     $content = e($_POST['content']);
     $link = e($_POST['link']);
-
+    
+    $didInsertWork = addProject($dbh, $title, $url, $content, $link, $_SESSION['id']);
+          
+    addmessage('success', "You have successfully added a project");
+    redirect("index.php");
 // Next, we must do some validation to see if we got valid data
 
 
 
 
-$didInsertWork = addProject($dbh, $title, $url, $content, $link);
+
 
 }
 
